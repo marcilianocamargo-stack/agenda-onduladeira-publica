@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1a56a0">
+<title>Agenda de Produção · Onduladeira</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #d6e4f4;
+  min-height: 100vh;
+  padding: 14px 12px 60px;
+  font-size: 17px;
+  color: #17324f;
+}
+.wrap { max-width: 720px; margin: 0 auto; }
+
+/* ===== HEADER ===== */
+.header {
+  background: #1a56a0;
+  border-radius: 16px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.logo-box {
+  background: white;
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-weight: 900;
+  font-size: 22px;
+  color: #1a56a0;
+  flex-shrink: 0;
+  letter-spacing: .5px;
+}
+.header-txt h1 { color: white; font-size: 21px; font-weight: 700; line-height: 1.2; }
+.header-txt p  { color: #a8c8f0; font-size: 14px; margin-top: 3px; }
+
+/* ===== STATUS BANNER ===== */
+.banner {
+  background: #e8f5e9;
+  border: 2.5px solid #4caf50;
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2e7d32;
+  text-align: center;
+}
+.banner.warn { background:#fff8e1; border-color:#f9a825; color:#e65100; }
+
+/* ===== CARD ===== */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(26,86,160,0.12);
+}
+.card h2 {
+  font-size: 16px;
+  color: #1a56a0;
+  margin-bottom: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.cap-bar-bg { background: #e3ecf6; border-radius: 6px; height: 8px; overflow: hidden; margin-bottom: 10px; }
+.cap-bar-fill { background: #1a56a0; height: 100%; }
+.cap-bar-fill.cheio { background: #e65100; }
+.cap-label { font-size: 12px; color: #6a8bb0; margin-bottom: 10px; }
+
+.pedido-row {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f4f8fc;
+  margin-bottom: 8px;
+  font-size: 14.5px;
+}
+.pedido-row .linha1 { display:flex; justify-content:space-between; font-weight:700; color:#17324f; }
+.pedido-row .linha2 { color:#5a7fa8; font-size:13px; margin-top:2px; }
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.badge.inicio { background:#e3f2fd; color:#1565c0; }
+.badge.continua { background:#fff3e0; color:#e65100; }
+.badge.conclui { background:#e8f5e9; color:#2e7d32; }
+.badge.reservado { background:#fff3e0; color:#e65100; }
+
+/* ===== GRUPO DE CLIENTE (VISUALIZAÇÃO) ===== */
+.cliente-view-group {
+  background: #f4f8fc;
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+.cliente-view-header {
+  display:flex; justify-content:space-between; align-items:center; cursor:pointer;
+}
+.cliente-view-group .pedido-row { background:white; margin-top:6px; }
+.chevron { font-size: 14px; color:#1a56a0; cursor:pointer; padding:4px; flex-shrink:0; }
+
+/* ===== CALENDÁRIO DE PRODUÇÃO ===== */
+.mes-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.mes-nav button {
+  background:#f4f8fc; border:none; color:#1a56a0; font-size:16px; font-weight:800;
+  width:32px; height:32px; border-radius:9px; cursor:pointer;
+}
+.mes-nav button:active { transform:scale(.96); }
+.mes-nav .titulo-mes { font-size:15px; font-weight:800; color:#17324f; text-transform:capitalize; }
+
+.dias-semana { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px; }
+.dias-semana span { text-align:center; font-size:9.5px; font-weight:800; color:#6a8bb0; text-transform:uppercase; letter-spacing:.4px; }
+.dias-semana span.fds { color:#9aa8b5; }
+
+.grid-calendario { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+
+.dia-cal {
+  position:relative; background:#f4f8fc; border-radius:8px; padding:4px 4px 5px;
+  min-height:74px; display:flex; flex-direction:column; border:1.5px solid transparent;
+  cursor:default;
+}
+.dia-cal.fds { background:#eef2f8; }
+.dia-cal.tem-dados { cursor:pointer; }
+.dia-cal.tem-dados:active { transform:scale(.97); }
+.dia-cal.vazio { background:transparent; }
+.dia-cal.vazio .num { color:#cfdcec; }
+.dia-cal .num { font-size:11px; font-weight:800; color:#17324f; line-height:1; }
+.dia-cal.hoje { border-color:#43a047; background:#f3fbf3; }
+.dia-cal.reservado { background:#f7f0fb; }
+.dia-cal.reservado.hoje { background:linear-gradient(135deg,#f3fbf3 55%,#f7f0fb 55%); }
+.dia-cal .pin { position:absolute; top:4px; right:15px; font-size:8px; }
+.dia-cal .status-dot { position:absolute; top:6px; right:5px; width:6px; height:6px; border-radius:50%; }
+.dia-cal .status-dot.livre { background:#43a047; }
+.dia-cal .status-dot.quase { background:#f9a825; }
+.dia-cal .status-dot.lotado { background:#c62828; }
+.dia-cal .barra-bg-mini { background:#e3ecf6; border-radius:3px; height:3px; overflow:hidden; margin:3px 0 4px; flex-shrink:0; }
+.dia-cal .barra-fill-mini { height:100%; border-radius:3px; }
+.dia-cal .clientes-nomes { display:flex; flex-direction:column; gap:1px; min-width:0; flex:1; }
+.dia-cal .cliente-linha { display:flex; align-items:center; gap:3px; font-size:8px; font-weight:700; color:#17324f; min-width:0; }
+.dia-cal .cliente-linha span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+.dia-cal .cliente-linha i { width:5px; height:5px; border-radius:50%; display:inline-block; flex-shrink:0; }
+.dia-cal .kg-total-mini { font-size:8.5px; font-weight:800; color:#17324f; flex-shrink:0; }
+
+.legenda-calendario { display:flex; flex-wrap:wrap; gap:6px 14px; padding-top:10px; border-top:1px solid #e3ecf6; margin-top:4px; }
+.legenda-calendario .legenda-item { display:flex; align-items:center; gap:5px; font-size:11px; color:#3a618f; }
+.legenda-calendario .legenda-item i { width:9px; height:9px; border-radius:3px; display:inline-block; flex-shrink:0; }
+
+.legenda-status-cal { display:flex; gap:14px; flex-wrap:wrap; margin-top:8px; font-size:10.5px; color:#6a8bb0; }
+.legenda-status-cal span { display:flex; align-items:center; gap:4px; }
+.legenda-status-cal i { width:6px; height:6px; border-radius:50%; display:inline-block; }
+
+.detalhe-dia-cal { margin-top:12px; }
+.detalhe-dia-cab { display:flex; align-items:center; margin-bottom:8px; }
+.detalhe-dia-cab b { font-size:14px; color:#1a56a0; }
+.detalhe-dia-cab .fechar-detalhe { margin-left:auto; cursor:pointer; color:#6a8bb0; font-size:12px; text-decoration:underline; }
+
+.hidden { display: none !important; }
+
+.small-note { font-size:12.5px; color:#6a8bb0; margin-top:6px; line-height:1.4; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="logo-box">A</div>
+    <div class="header-txt">
+      <h1>Agenda de Produção</h1>
+      <p>Onduladeira · projeção por capacidade</p>
+    </div>
+  </div>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <div class="card">
+    <h2>Calendário de Produção</h2>
+    <div class="mes-nav">
+      <button id="btnMesAnterior" aria-label="Mês anterior">◀</button>
+      <span class="titulo-mes" id="tituloMesCalendario"></span>
+      <button id="btnMesSeguinte" aria-label="Próximo mês">▶</button>
+    </div>
+    <div class="dias-semana"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span class="fds">Sáb</span><span class="fds">Dom</span></div>
+    <div class="grid-calendario" id="gridCalendario"></div>
+    <div class="legenda-calendario" id="legendaCalendario"></div>
+    <div class="legenda-status-cal">
+      <span><i style="background:#43a047"></i> livre</span>
+      <span><i style="background:#f9a825"></i> quase cheio</span>
+      <span><i style="background:#c62828"></i> lotado</span>
+      <span><span style="width:11px;height:8px;background:#f7f0fb;border-radius:2px;display:inline-block"></span> tem reserva</span>
+    </div>
+    <div class="detalhe-dia-cal hidden" id="detalheDiaCalendario"></div>
+    <div class="small-note">Toque num dia com produção pra ver os pedidos (cada aba do Excel é um pedido — um cliente pode ter mais de um).</div>
+  </div>
+
+  <div class="small-note" style="text-align:center">Consulta pública da fila de produção. Sem dados de valor/preço.</div>
+
+</div>
+
+<script>
+// ===================== ESPELHO PÚBLICO DO CALENDÁRIO =====================
+// Só lê dados públicos (kg, cliente, medidas, datas) direto do repositório
+// principal no GitHub. Não existe aqui nenhum código de preço, PIN de
+// supervisor ou edição — é uma cópia somente-leitura do Calendário de
+// Produção do app completo, pra compartilhar com mais gente sem expor a
+// área administrativa.
+const REPO_RAW = 'https://raw.githubusercontent.com/marcilianocamargo-stack/agenda-producao-onduladeira/main/programacao-agenda.json';
+
+// Mesma calibração do app principal (setup por troca de bobina, velocidade
+// da máquina) — precisa ser igual pra projetar os mesmos dias/status.
+const VELOCIDADE_M_MIN = 60;
+const CAP_MIN_DIA = 960;
+const SETUP = {
+  semTrocaBobina: 8,
+  ate150mm:      30,
+  de150a400mm:   36,
+  acima400mm:    46,
+  trocaPapel:     5,
+  semAnterior:   36
+};
+function setupEntre(ant, p){
+  if (p && typeof p.setupManual === 'number') return p.setupManual;
+  if (!ant) return SETUP.semAnterior;
+  const la = Number(ant.largura) || 0, lp = Number(p.largura) || 0;
+  if (!la || !lp) return SETUP.semAnterior;
+  const dif = Math.abs(la - lp) * 1000;
+  let min = dif < 5      ? SETUP.semTrocaBobina
+          : dif < 150    ? SETUP.ate150mm
+          : dif < 400    ? SETUP.de150a400mm
+          :                SETUP.acima400mm;
+  const pa = String(ant.po || '').trim().toUpperCase();
+  const pp = String(p.po || '').trim().toUpperCase();
+  if (pa && pp && pa !== pp) min += SETUP.trocaPapel;
+  return min;
+}
+function tempoPedido(p, ant){
+  return setupEntre(ant, p) + (Number(p.ml) || 0) / VELOCIDADE_M_MIN;
+}
+const DIAS_UTEIS = [1,2,3,4,5];
+const DIAS_SEMANA_PT = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+const TURNOS = [
+  [8*60, 12*60],
+  [13*60, 18*60],
+  [18*60, 20*60],
+  [21*60, 26*60],
+];
+
+let seqCounter = 1;
+function uid(){ return 'p'+(seqCounter++)+'_'+Math.random().toString(36).slice(2,7); }
+function chaveOf(p){
+  const of = String(p.of||'').trim();
+  if (of) return 'OF:'+of;
+  return 'X:'+chaveCliente(p.cliente)+'|'+String(p.po||'').trim()+'|'+String(p.oc||'').trim()+'|'+(p.ml||0);
+}
+function fmtData(d){
+  return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
+}
+function nomeDia(d){ return DIAS_SEMANA_PT[d.getDay()]; }
+function chaveDiaISO(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function chaveCliente(c){ return String(c||'').trim().toUpperCase(); }
+function chaveLote(p){ return String(p.lote || p.cliente || '').trim().toUpperCase(); }
+function nomeLote(p){ return String(p.lote || p.cliente || '').trim(); }
+function agruparPorLote(lista){
+  const mapa = new Map();
+  lista.forEach(p => {
+    const k = chaveLote(p);
+    if (!mapa.has(k)) mapa.set(k, { chave: k, lote: nomeLote(p), cliente: String(p.cliente||'').trim(), pedidos: [] });
+    mapa.get(k).pedidos.push(p);
+  });
+  return Array.from(mapa.values());
+}
+function achatarGrupos(grupos){
+  return grupos.flatMap(g => g.pedidos);
+}
+function proximoDiaUtil(d){
+  let n = new Date(d);
+  n.setDate(n.getDate()+1);
+  while(!DIAS_UTEIS.includes(n.getDay())) n.setDate(n.getDate()+1);
+  return n;
+}
+function ehDiaUtil(d){ return DIAS_UTEIS.includes(d.getDay()); }
+function proximoDiaUtilAPartirDe(d){
+  let n = new Date(d);
+  while(!ehDiaUtil(n)) n.setDate(n.getDate()+1);
+  return n;
+}
+function minutosUsadosNoTurno(t){
+  let used = 0;
+  for (const [s,e] of TURNOS){
+    if (t <= s) break;
+    used += Math.min(t,e) - s;
+  }
+  return used;
+}
+function estadoAgora(now){
+  const hoje0h = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const hour = now.getHours(), min = now.getMinutes();
+  if (hour >= 2){
+    const tMin = hour*60 + min;
+    if (ehDiaUtil(hoje0h) && tMin >= TURNOS[0][0] && tMin < TURNOS[TURNOS.length-1][1]){
+      return { bucketStart: hoje0h, restanteHoje: CAP_MIN_DIA - minutosUsadosNoTurno(tMin), emTurno: true };
+    }
+  } else {
+    const ontem0h = new Date(hoje0h); ontem0h.setDate(ontem0h.getDate()-1);
+    const tMin = 24*60 + hour*60 + min;
+    if (ehDiaUtil(ontem0h) && tMin < TURNOS[TURNOS.length-1][1]){
+      return { bucketStart: ontem0h, restanteHoje: CAP_MIN_DIA - minutosUsadosNoTurno(tMin), emTurno: true };
+    }
+  }
+  const candidato = hour < 8 ? hoje0h : new Date(hoje0h.getFullYear(), hoje0h.getMonth(), hoje0h.getDate()+1);
+  return { bucketStart: proximoDiaUtilAPartirDe(candidato), restanteHoje: CAP_MIN_DIA, emTurno: false };
+}
+
+// ===================== CÁLCULO DA AGENDA (idêntico ao app principal) =====================
+function calcularAgenda(pedidos, agora){
+  agora = agora || new Date();
+  const estado = estadoAgora(agora);
+  const bucketStart = estado.bucketStart;
+
+  const naoReservados = pedidos.filter(p => !p.dataReservada);
+
+  const reservasPorDia = new Map();
+  pedidos.filter(p => p.dataReservada).forEach(p => {
+    const [y,m,d] = p.dataReservada.split('-').map(Number);
+    let dt = new Date(y, m-1, d);
+    if (dt < bucketStart) dt = new Date(bucketStart);
+    if (!ehDiaUtil(dt)) dt = proximoDiaUtilAPartirDe(dt);
+    const k = chaveDiaISO(dt);
+    if (!reservasPorDia.has(k)) reservasPorDia.set(k, []);
+    reservasPorDia.get(k).push(p);
+  });
+  const diasProcessados = new Set();
+
+  const dias = [];
+  let diaAtual = new Date(bucketStart);
+  let capRestante = estado.restanteHoje;
+  let diaObj = { data: new Date(diaAtual), itens: [], minUsados: CAP_MIN_DIA - capRestante, emAndamento: estado.emTurno };
+  dias.push(diaObj);
+
+  const pedidosInfo = {};
+
+  let ultimoPedido = null;
+  function custoDe(p){
+    const min = tempoPedido(p, ultimoPedido);
+    ultimoPedido = p;
+    return min;
+  }
+
+  function aplicarReservasDoDiaAtual(){
+    let k = chaveDiaISO(diaObj.data);
+    while (reservasPorDia.has(k) && !diasProcessados.has(k)){
+      diasProcessados.add(k);
+      reservasPorDia.get(k).forEach(p => {
+        let restante = custoDe(p);
+        const diasTocados = [];
+        while (restante > 0.0001){
+          if (capRestante <= 0.0001){
+            diaAtual = proximoDiaUtil(diaAtual);
+            capRestante = CAP_MIN_DIA;
+            diaObj = { data: new Date(diaAtual), itens: [], minUsados: 0, emAndamento: false };
+            dias.push(diaObj);
+          }
+          const usar = Math.min(restante, capRestante);
+          restante -= usar;
+          capRestante -= usar;
+          diaObj.minUsados += usar;
+          diaObj.itens.push({ pedido: p, status: 'reservado', minUsados: usar });
+          diasTocados.push(diaObj.data);
+        }
+        pedidosInfo[p.id] = { diaInicio: diasTocados[0], diaFim: diasTocados[diasTocados.length-1] };
+      });
+      k = chaveDiaISO(diaObj.data);
+    }
+  }
+  aplicarReservasDoDiaAtual();
+
+  naoReservados.forEach(p => {
+    let restante = custoDe(p);
+    let primeiraVez = true;
+    const diasTocados = [];
+
+    while (restante > 0.0001) {
+      if (capRestante <= 0.0001) {
+        diaAtual = proximoDiaUtil(diaAtual);
+        capRestante = CAP_MIN_DIA;
+        diaObj = { data: new Date(diaAtual), itens: [], minUsados: 0, emAndamento: false };
+        dias.push(diaObj);
+        aplicarReservasDoDiaAtual();
+      }
+      const usar = Math.min(restante, capRestante);
+      restante -= usar;
+      capRestante -= usar;
+      diaObj.minUsados += usar;
+
+      const status = primeiraVez ? (restante > 0.0001 ? 'inicio' : 'unico') : (restante > 0.0001 ? 'continua' : 'conclui');
+      diaObj.itens.push({ pedido: p, status, minUsados: usar });
+      diasTocados.push(diaObj.data);
+      primeiraVez = false;
+    }
+    pedidosInfo[p.id] = { diaInicio: diasTocados[0], diaFim: diasTocados[diasTocados.length-1] };
+  });
+
+  const chavesRestantes = [...reservasPorDia.keys()].filter(k => !diasProcessados.has(k)).sort();
+  let dataDia = null, capDoDia = 0, novoDia = null, antDoDia = null;
+
+  function abrirDia(dt){
+    dataDia = new Date(dt);
+    capDoDia = CAP_MIN_DIA;
+    novoDia = { data: new Date(dataDia), itens: [], minUsados: 0, emAndamento: false };
+    dias.push(novoDia);
+    diasProcessados.add(chaveDiaISO(dataDia));
+  }
+
+  chavesRestantes.forEach(k => {
+    const [y,m,d] = k.split('-').map(Number);
+    const dataReserva = new Date(y, m-1, d);
+
+    if (!novoDia || dataReserva > dataDia){
+      abrirDia(dataReserva);
+      antDoDia = null;
+    }
+
+    reservasPorDia.get(k).forEach(p => {
+      let restante = tempoPedido(p, antDoDia);
+      antDoDia = p;
+      const diasTocados = [];
+      while (restante > 0.0001){
+        if (capDoDia <= 0.0001) abrirDia(proximoDiaUtil(dataDia));
+        const usar = Math.min(restante, capDoDia);
+        restante -= usar;
+        capDoDia -= usar;
+        novoDia.minUsados += usar;
+        novoDia.itens.push({ pedido: p, status: 'reservado', minUsados: usar });
+        diasTocados.push(novoDia.data);
+      }
+      pedidosInfo[p.id] = { diaInicio: diasTocados[0], diaFim: diasTocados[diasTocados.length-1] };
+    });
+  });
+  dias.sort((a,b) => a.data - b.data);
+
+  return { dias, pedidosInfo };
+}
+
+// ===================== HELPERS DE SAÍDA =====================
+function escHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+    { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+  ));
+}
+function mostrarBanner(msg, warn){
+  const b = document.getElementById('banner');
+  b.textContent = msg;
+  b.className = 'banner' + (warn ? ' warn' : '');
+}
+
+// ===================== CALENDÁRIO DE PRODUÇÃO =====================
+const PALETA_CATEGORICA = ['#2a78d6','#1baf7a','#eda100','#008300','#4a3aa7','#e34948','#e87ba4','#eb6834'];
+const COR_OUTROS = '#b9c4cf';
+
+let pendentes = [];
+let mesCalendarioAtual = null;
+let diaSelecionadoCalendario = null;
+let expandidoView = new Set();
+
+function renderCalendarioProducao(){
+  if (!mesCalendarioAtual){
+    const hoje = new Date();
+    mesCalendarioAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  }
+  document.getElementById('tituloMesCalendario').textContent =
+    mesCalendarioAtual.toLocaleDateString('pt-BR', { month:'long', year:'numeric' });
+
+  const grid = document.getElementById('gridCalendario');
+  const legenda = document.getElementById('legendaCalendario');
+
+  if (!pendentes.length){
+    grid.innerHTML = '<p style="grid-column:1/-1;color:#6a8bb0;font-size:13px;text-align:center;padding:16px 0;">Fila vazia — nada para mostrar.</p>';
+    legenda.innerHTML = '';
+    renderDetalheDiaCalendario();
+    return;
+  }
+
+  const agora = new Date();
+  const { dias } = calcularAgenda(pendentes, agora);
+  const porChaveDia = new Map(dias.map(d => [chaveDiaISO(d.data), d]));
+
+  const totalPorLote = new Map();
+  dias.forEach(d => d.itens.forEach(it => {
+    const k = chaveLote(it.pedido);
+    if (!totalPorLote.has(k)) totalPorLote.set(k, { nome: nomeLote(it.pedido), kg: 0 });
+    totalPorLote.get(k).kg += (it.pedido.kg||0);
+  }));
+  const ranking = Array.from(totalPorLote, ([chave,c]) => ({ chave, nome: c.nome, kg: c.kg })).sort((a,b)=>b.kg-a.kg);
+  const top = ranking.slice(0,7);
+  const corPorLote = new Map(top.map((c,i) => [c.chave, PALETA_CATEGORICA[i]]));
+
+  const ano = mesCalendarioAtual.getFullYear(), mesIdx = mesCalendarioAtual.getMonth();
+  const primeiroDiaSemana = new Date(ano, mesIdx, 1).getDay();
+  const totalDiasNoMes = new Date(ano, mesIdx+1, 0).getDate();
+  const hojeStr = agora.toDateString();
+
+  grid.innerHTML = '';
+  const colunaInicial = (primeiroDiaSemana + 6) % 7;
+  for (let i=0;i<colunaInicial;i++) grid.appendChild(criarCelulaCalendarioVazia());
+
+  for (let d=1; d<=totalDiasNoMes; d++){
+    const dataCel = new Date(ano, mesIdx, d);
+    const diaObj = porChaveDia.get(chaveDiaISO(dataCel));
+    grid.appendChild(criarCelulaCalendarioDia(dataCel, diaObj, corPorLote, hojeStr));
+  }
+
+  legenda.innerHTML = top.map(c => `<span class="legenda-item"><i style="background:${corPorLote.get(c.chave)}"></i>${escHtml(c.nome)}</span>`).join('')
+    + (ranking.length>7 ? `<span class="legenda-item"><i style="background:${COR_OUTROS}"></i>Outros (${ranking.length-7} pedidos)</span>` : '');
+
+  renderDetalheDiaCalendario();
+}
+
+function criarCelulaCalendarioVazia(){
+  const el = document.createElement('div');
+  el.className = 'dia-cal vazio';
+  return el;
+}
+
+function criarCelulaCalendarioDia(dataCel, diaObj, corPorLote, hojeStr){
+  const el = document.createElement('div');
+  const ehHoje = dataCel.toDateString() === hojeStr;
+  const diaSemana = dataCel.getDay();
+  const fds = diaSemana === 0 || diaSemana === 6;
+  const temDados = !!diaObj && diaObj.itens.length > 0;
+  const reservado = temDados && diaObj.itens.some(it => it.status === 'reservado');
+  el.className = 'dia-cal' + (ehHoje?' hoje':'') + (temDados?' tem-dados':'') + (reservado?' reservado':'') + (fds?' fds':'');
+
+  let html = `<span class="num">${dataCel.getDate()}</span>`;
+  if (temDados){
+    const min = diaObj.minUsados;
+    const status = min >= CAP_MIN_DIA*0.95 ? 'lotado' : min >= CAP_MIN_DIA*0.6 ? 'quase' : 'livre';
+    const corBarra = status==='lotado' ? '#c62828' : status==='quase' ? '#f9a825' : '#43a047';
+    if (reservado) html += `<span class="pin">📌</span>`;
+    html += `<span class="status-dot ${status}"></span>`;
+    const pct = Math.min(100, Math.round(min/CAP_MIN_DIA*100));
+    html += `<div class="barra-bg-mini"><div class="barra-fill-mini" style="width:${pct}%;background:${corBarra}"></div></div>`;
+
+    const porLote = new Map();
+    let kgTotal = 0;
+    diaObj.itens.forEach(it => {
+      const k = chaveLote(it.pedido);
+      const kg = it.pedido.kg || 0;
+      if (!porLote.has(k)) porLote.set(k, { nome: nomeLote(it.pedido), kg: 0 });
+      porLote.get(k).kg += kg;
+      kgTotal += kg;
+    });
+    const ordenados = Array.from(porLote, ([chave,c]) => ({chave, nome:c.nome, kg:c.kg}));
+    html += `<div class="clientes-nomes">${ordenados.map(c =>
+      `<div class="cliente-linha" title="${escHtml(c.nome)}"><i style="background:${corPorLote.get(c.chave)||COR_OUTROS}"></i><span>${escHtml(c.nome.split(' ')[0])}...</span></div>`
+    ).join('')}</div>`;
+    html += `<div class="kg-total-mini">${Math.round(kgTotal).toLocaleString('pt-BR')} kg</div>`;
+  }
+  el.innerHTML = html;
+  if (temDados){
+    el.addEventListener('click', () => {
+      diaSelecionadoCalendario = chaveDiaISO(dataCel);
+      renderDetalheDiaCalendario();
+    });
+  }
+  return el;
+}
+
+function renderGruposClientesDia(d){
+  const gruposDia = [];
+  const idxPorChave = new Map();
+  d.itens.forEach(it => {
+    const k = chaveLote(it.pedido);
+    if (!idxPorChave.has(k)){ idxPorChave.set(k, gruposDia.length); gruposDia.push({ chave:k, nomeLote: nomeLote(it.pedido), cliente: it.pedido.cliente.trim(), itens: [] }); }
+    gruposDia[idxPorChave.get(k)].itens.push(it);
+  });
+
+  let html = '';
+  gruposDia.forEach(g => {
+    const totalKg = g.itens.reduce((s,it)=>s+(it.pedido.kg||0),0);
+    const totalMl = g.itens.reduce((s,it)=>s+(it.pedido.ml||0),0);
+    const totalMin = g.itens.reduce((s,it)=>s+it.minUsados,0);
+    const chaveExpand = d.data.toDateString() + '|' + g.chave;
+    const aberto = expandidoView.has(chaveExpand);
+    const mostrarCliente = chaveCliente(g.cliente) !== g.chave;
+
+    html += `<div class="cliente-view-group">
+      <div class="cliente-view-header" data-toggle-view="${escHtml(chaveExpand)}">
+        <span><b>${escHtml(g.nomeLote)}</b>${mostrarCliente?` <span class="linha2" style="display:inline">(${escHtml(g.cliente)})</span>`:''} <span class="badge" style="background:#dce7f6;color:#1a56a0">${g.itens.length} ped.</span></span>
+        <span class="chevron">${aberto?'▾':'▸'}</span>
+      </div>
+      <div class="linha2">${Math.round(totalKg)} kg · ${Math.round(totalMl)} ML · ${Math.round(totalMin)} min neste dia</div>`;
+
+    if (aberto){
+      g.itens.forEach(it => {
+        const p = it.pedido;
+        const badgeTxt = { inicio:'início', continua:'continua', conclui:'conclui', unico:'', reservado:'📌 reservado' }[it.status];
+        const badgeCls = { inicio:'inicio', continua:'continua', conclui:'conclui', unico:'', reservado:'reservado' }[it.status];
+        const medidas = (p.largura && p.comprimento) ? `${Math.round(p.largura*1000)}x${Math.round(p.comprimento*1000)}` : '';
+        html += `<div class="pedido-row">
+          <div class="linha1"><span>${escHtml(p.po||'')}</span>${badgeTxt?`<span class="badge ${badgeCls}">${badgeTxt}</span>`:''}</div>
+          <div class="linha2">OP ${escHtml(p.of||'-')}${p.qtdePedido?' · Qtde '+Math.round(p.qtdePedido).toLocaleString('pt-BR'):''}${medidas?' · '+medidas+' mm':''}${p.vinco?' · Vinco '+escHtml(p.vinco):''}${p.bobina?' · Bobina '+Math.round(p.bobina):''}${p.po?' · Tipo '+escHtml(p.po):''} · ${p.kg?Math.round(p.kg)+' kg':''} · ${Math.round(it.minUsados)} min</div>
+        </div>`;
+      });
+    }
+    html += `</div>`;
+  });
+  return html;
+}
+
+function renderDetalheDiaCalendario(){
+  const cont = document.getElementById('detalheDiaCalendario');
+  if (!diaSelecionadoCalendario){ cont.classList.add('hidden'); cont.innerHTML=''; return; }
+
+  const { dias } = calcularAgenda(pendentes, new Date());
+  const d = dias.find(dd => chaveDiaISO(dd.data) === diaSelecionadoCalendario);
+  if (!d){ cont.classList.add('hidden'); cont.innerHTML=''; diaSelecionadoCalendario = null; return; }
+
+  const dataObj = d.data;
+
+  cont.classList.remove('hidden');
+  const pct = Math.min(100, Math.round((d.minUsados/CAP_MIN_DIA)*100));
+  let html = `
+    <div class="detalhe-dia-cab">
+      <b>${nomeDia(dataObj)}, ${fmtData(dataObj)}</b>
+      <span class="fechar-detalhe" id="fecharDetalheCalendario">fechar ✕</span>
+    </div>
+    <div class="cap-bar-bg"><div class="cap-bar-fill ${pct>=95?'cheio':''}" style="width:${pct}%"></div></div>
+    <div class="cap-label">${Math.round(d.minUsados)} de ${CAP_MIN_DIA} min usados (${pct}%)</div>
+    ${renderGruposClientesDia(d)}`;
+  cont.innerHTML = html;
+
+  document.getElementById('fecharDetalheCalendario').addEventListener('click', () => {
+    diaSelecionadoCalendario = null;
+    renderDetalheDiaCalendario();
+  });
+  cont.querySelectorAll('[data-toggle-view]').forEach(el => {
+    el.addEventListener('click', () => {
+      const k = el.getAttribute('data-toggle-view');
+      if (expandidoView.has(k)) expandidoView.delete(k); else expandidoView.add(k);
+      renderDetalheDiaCalendario();
+    });
+  });
+}
+
+document.getElementById('btnMesAnterior').addEventListener('click', () => {
+  mesCalendarioAtual = new Date(mesCalendarioAtual.getFullYear(), mesCalendarioAtual.getMonth()-1, 1);
+  diaSelecionadoCalendario = null;
+  renderCalendarioProducao();
+});
+document.getElementById('btnMesSeguinte').addEventListener('click', () => {
+  mesCalendarioAtual = new Date(mesCalendarioAtual.getFullYear(), mesCalendarioAtual.getMonth()+1, 1);
+  diaSelecionadoCalendario = null;
+  renderCalendarioProducao();
+});
+
+// ===================== CARGA DE DADOS =====================
+function normalizarLista(lista){
+  return (lista || []).map(p => {
+    const comId = { ...p, id: p.id || uid() };
+    comId.chave = comId.chave || chaveOf(comId);
+    return comId;
+  });
+}
+async function carregarProgramacaoPublicada(){
+  try {
+    const r = await fetch(REPO_RAW + '?t=' + Date.now(), { cache:'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    pendentes = achatarGrupos(agruparPorLote(normalizarLista(data.pendentes)));
+    document.getElementById('banner').classList.add('hidden');
+  } catch (err){
+    mostrarBanner('Não foi possível carregar a fila agora. Tentando de novo em instantes…', true);
+  }
+  renderCalendarioProducao();
+}
+carregarProgramacaoPublicada();
+setInterval(carregarProgramacaoPublicada, 60000);
+</script>
+</body>
+</html>
